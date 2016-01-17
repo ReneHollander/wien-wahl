@@ -11,5 +11,12 @@ class Reader(Iterable):
         for row in reader:
             yield row
 
+    def collect(self, list=None):
+        if list is None:
+            list = []
+        for item in self:
+            list.append(item)
+        return list
+
     def __init__(self, file):
         self.file = file

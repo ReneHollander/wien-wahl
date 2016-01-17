@@ -1,6 +1,10 @@
-from data.reader import Reader
+import sys
 
-with open("test.csv") as file:
-    reader = Reader(file)
-    for row in reader:
-        print(row)
+from PySide.QtGui import QApplication
+
+from ui.MainWindowController import MainWindowController
+
+app = QApplication(sys.argv)
+c = MainWindowController()
+c.show()
+sys.exit(app.exec_())
