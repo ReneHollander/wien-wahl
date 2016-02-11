@@ -2,9 +2,10 @@ import sys
 
 from PySide.QtGui import QApplication
 
-from ui.MainWindowController import MainWindowController
+from ui.MainController import MainController
 
 app = QApplication(sys.argv)
-c = MainWindowController()
+# c = ImportController()
+c = MainController()
 c.show()
 sys.exit(app.exec_())

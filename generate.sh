@@ -1,4 +1,11 @@
 #!/bin/bash
 
+function gen {
+  pyside-uic -o ui/$1View.py res/ui/$1.ui
+  echo $1
+}
+
 mkdir -p ui/
-venv/bin/python venv/lib/python3.4/site-packages/PySide/scripts/uic.py -o ui/MainWindowView.py res/ui/MainWindow.ui
+
+gen Import
+gen Main

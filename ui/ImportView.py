@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'res/ui/MainWindow.ui'
+# Form implementation generated from reading ui file 'res/ui/Import.ui'
 #
-# Created: Sun Jan 17 13:44:55 2016
+# Created: Thu Feb 11 12:23:37 2016
 #      by: pyside-uic 0.2.15 running on PySide 1.2.4
 #
 # WARNING! All changes made in this file will be lost!
 
 from PySide import QtCore, QtGui
 
-class Ui_MainWindow(object):
-    def setupUi(self, MainWindow):
-        MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(800, 600)
-        self.centralWidget = QtGui.QWidget(MainWindow)
+class Ui_Import(object):
+    def setupUi(self, Import):
+        Import.setObjectName("Import")
+        Import.resize(800, 600)
+        self.centralWidget = QtGui.QWidget(Import)
         self.centralWidget.setObjectName("centralWidget")
         self.gridLayout = QtGui.QGridLayout(self.centralWidget)
         self.gridLayout.setObjectName("gridLayout")
@@ -35,13 +35,13 @@ class Ui_MainWindow(object):
         self.horizontalLayout.addWidget(self.fileExplorerButton)
         self.verticalLayout.addLayout(self.horizontalLayout)
         self.gridLayout.addLayout(self.verticalLayout, 0, 0, 1, 1)
-        MainWindow.setCentralWidget(self.centralWidget)
+        Import.setCentralWidget(self.centralWidget)
 
-        self.retranslateUi(MainWindow)
-        QtCore.QMetaObject.connectSlotsByName(MainWindow)
+        self.retranslateUi(Import)
+        QtCore.QMetaObject.connectSlotsByName(Import)
 
-    def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(QtGui.QApplication.translate("MainWindow", "MainWindow", None, QtGui.QApplication.UnicodeUTF8))
-        self.readButton.setText(QtGui.QApplication.translate("MainWindow", "Read", None, QtGui.QApplication.UnicodeUTF8))
-        self.fileExplorerButton.setText(QtGui.QApplication.translate("MainWindow", "...", None, QtGui.QApplication.UnicodeUTF8))
+    def retranslateUi(self, Import):
+        Import.setWindowTitle(QtGui.QApplication.translate("Import", "Import", None, QtGui.QApplication.UnicodeUTF8))
+        self.readButton.setText(QtGui.QApplication.translate("Import", "Read", None, QtGui.QApplication.UnicodeUTF8))
+        self.fileExplorerButton.setText(QtGui.QApplication.translate("Import", "...", None, QtGui.QApplication.UnicodeUTF8))
 

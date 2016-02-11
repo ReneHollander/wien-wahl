@@ -1,0 +1,91 @@
+# -*- coding: utf-8 -*-
+
+# Form implementation generated from reading ui file 'res/ui/Main.ui'
+#
+# Created: Thu Feb 11 12:23:37 2016
+#      by: pyside-uic 0.2.15 running on PySide 1.2.4
+#
+# WARNING! All changes made in this file will be lost!
+
+from PySide import QtCore, QtGui
+
+class Ui_Main(object):
+    def setupUi(self, Main):
+        Main.setObjectName("Main")
+        Main.resize(800, 686)
+        self.centralwidget = QtGui.QWidget(Main)
+        self.centralwidget.setObjectName("centralwidget")
+        Main.setCentralWidget(self.centralwidget)
+        self.menubar = QtGui.QMenuBar(Main)
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 26))
+        self.menubar.setObjectName("menubar")
+        self.menuFile = QtGui.QMenu(self.menubar)
+        self.menuFile.setObjectName("menuFile")
+        self.menuEdit = QtGui.QMenu(self.menubar)
+        self.menuEdit.setObjectName("menuEdit")
+        self.menuWindows = QtGui.QMenu(self.menubar)
+        self.menuWindows.setObjectName("menuWindows")
+        self.menuHelp = QtGui.QMenu(self.menubar)
+        self.menuHelp.setObjectName("menuHelp")
+        Main.setMenuBar(self.menubar)
+        self.statusbar = QtGui.QStatusBar(Main)
+        self.statusbar.setObjectName("statusbar")
+        Main.setStatusBar(self.statusbar)
+        self.actionOpen = QtGui.QAction(Main)
+        self.actionOpen.setObjectName("actionOpen")
+        self.actionSave = QtGui.QAction(Main)
+        self.actionSave.setObjectName("actionSave")
+        self.actionSave_As = QtGui.QAction(Main)
+        self.actionSave_As.setObjectName("actionSave_As")
+        self.actionNew = QtGui.QAction(Main)
+        self.actionNew.setObjectName("actionNew")
+        self.actionCopy_CS = QtGui.QAction(Main)
+        self.actionCopy_CS.setObjectName("actionCopy_CS")
+        self.actionControlQ = QtGui.QAction(Main)
+        self.actionControlQ.setObjectName("actionControlQ")
+        self.actionClose = QtGui.QAction(Main)
+        self.actionClose.setObjectName("actionClose")
+        self.menuFile.addAction(self.actionOpen)
+        self.menuFile.addAction(self.actionSave)
+        self.menuFile.addAction(self.actionSave_As)
+        self.menuFile.addAction(self.actionNew)
+        self.menuFile.addAction(self.actionClose)
+        self.menuEdit.addSeparator()
+        self.menuEdit.addAction(self.actionCopy_CS)
+        self.menubar.addAction(self.menuFile.menuAction())
+        self.menubar.addAction(self.menuEdit.menuAction())
+        self.menubar.addAction(self.menuWindows.menuAction())
+        self.menubar.addAction(self.menuHelp.menuAction())
+
+        self.retranslateUi(Main)
+        QtCore.QObject.connect(self.actionControlQ, QtCore.SIGNAL("triggered()"), Main.close)
+        QtCore.QMetaObject.connectSlotsByName(Main)
+
+    def retranslateUi(self, Main):
+        Main.setWindowTitle(QtGui.QApplication.translate("Main", "Main", None, QtGui.QApplication.UnicodeUTF8))
+        self.menuFile.setToolTip(QtGui.QApplication.translate("Main", "File", None, QtGui.QApplication.UnicodeUTF8))
+        self.menuFile.setStatusTip(QtGui.QApplication.translate("Main", "File", None, QtGui.QApplication.UnicodeUTF8))
+        self.menuFile.setTitle(QtGui.QApplication.translate("Main", "File", None, QtGui.QApplication.UnicodeUTF8))
+        self.menuEdit.setToolTip(QtGui.QApplication.translate("Main", "Edit", None, QtGui.QApplication.UnicodeUTF8))
+        self.menuEdit.setStatusTip(QtGui.QApplication.translate("Main", "Edit", None, QtGui.QApplication.UnicodeUTF8))
+        self.menuEdit.setTitle(QtGui.QApplication.translate("Main", "Edit", None, QtGui.QApplication.UnicodeUTF8))
+        self.menuWindows.setTitle(QtGui.QApplication.translate("Main", "Windows", None, QtGui.QApplication.UnicodeUTF8))
+        self.menuHelp.setToolTip(QtGui.QApplication.translate("Main", "Help", None, QtGui.QApplication.UnicodeUTF8))
+        self.menuHelp.setStatusTip(QtGui.QApplication.translate("Main", "Help", None, QtGui.QApplication.UnicodeUTF8))
+        self.menuHelp.setTitle(QtGui.QApplication.translate("Main", "Help", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionOpen.setText(QtGui.QApplication.translate("Main", "Open", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionOpen.setStatusTip(QtGui.QApplication.translate("Main", "Open", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionSave.setText(QtGui.QApplication.translate("Main", "Save", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionSave.setStatusTip(QtGui.QApplication.translate("Main", "Save", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionSave_As.setText(QtGui.QApplication.translate("Main", "Save As", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionSave_As.setStatusTip(QtGui.QApplication.translate("Main", "Save As", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionNew.setText(QtGui.QApplication.translate("Main", "New", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionNew.setStatusTip(QtGui.QApplication.translate("Main", "New File", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionCopy_CS.setText(QtGui.QApplication.translate("Main", "Copy CS", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionCopy_CS.setStatusTip(QtGui.QApplication.translate("Main", "Copy CS", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionControlQ.setText(QtGui.QApplication.translate("Main", "ControlQ", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionControlQ.setShortcut(QtGui.QApplication.translate("Main", "Ctrl+Q", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionClose.setText(QtGui.QApplication.translate("Main", "Close", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionClose.setStatusTip(QtGui.QApplication.translate("Main", "Close", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionClose.setShortcut(QtGui.QApplication.translate("Main", "Ctrl+Q", None, QtGui.QApplication.UnicodeUTF8))
+

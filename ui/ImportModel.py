@@ -5,7 +5,7 @@ Autor: Rene Hollander 5BHIT
 from data.reader import Reader
 
 
-class MainWindowModel():
+class ImportModel():
     def __init__(self):
         self.items = []
 

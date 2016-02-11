@@ -6,20 +6,20 @@ import csv
 from PySide.QtGui import *
 
 import os
-from ui import MainWindowView
+from ui import ImportView
 from ui.ContentTableModel import ContentTableModel
-from ui.MainWindowModel import MainWindowModel
+from ui.ImportModel import ImportModel
 
 
-class MainWindowController(QMainWindow):
+class ImportController(QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.last_value = 0
 
-        self.form = MainWindowView.Ui_MainWindow()
+        self.form = ImportView.Ui_Import()
         self.form.setupUi(self)
 
-        self.model = MainWindowModel()
+        self.model = ImportModel()
         self.table_model = ContentTableModel(self, self.model.items)
         self.form.contentTable.setModel(self.table_model)
         self.form.readButton.clicked.connect(self.onclick_read)
