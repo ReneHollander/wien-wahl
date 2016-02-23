@@ -19,4 +19,6 @@ class Reader(Iterable):
         return list
 
     def __init__(self, file):
+        if file is None or not hasattr(file, 'read'):
+            raise Exception("invalid file")
         self.file = file
