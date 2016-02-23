@@ -1,5 +1,8 @@
-import os
 import unittest
+
+# import sys, os
+
+# sys.path.insert(0, os.path.abspath(__file__ + "/.."))
 
 from data.reader import *
 
