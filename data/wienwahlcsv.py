@@ -9,7 +9,11 @@ class WienWahlReader(Iterable):
         self.file.seek(0)
         reader = csv.DictReader(self.file, dialect=dialect)
         for row in reader:
-            yield row
+            newrow = {}
+            for key, value in row.items():
+                if key.strip() is not "":
+                    newrow[key.strip()] = value
+            yield newrow
 
     def collect(self, list=None):
         if list is None:
