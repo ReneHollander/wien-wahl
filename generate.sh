@@ -7,5 +7,5 @@ function gen {
 
 mkdir -p ui/
 
-gen Import
 gen Main
+gen ComputerPrediction

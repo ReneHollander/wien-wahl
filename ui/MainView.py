@@ -2,13 +2,12 @@
 
 # Form implementation generated from reading ui file 'res/ui/Main.ui'
 #
-# Created: Mon Apr 11 14:14:09 2016
+# Created: Mon Apr 11 15:11:39 2016
 #      by: pyside-uic 0.2.15 running on PySide 1.2.4
 #
 # WARNING! All changes made in this file will be lost!
 
 from PySide import QtCore, QtGui
-
 
 class Ui_Main(object):
     def setupUi(self, Main):
@@ -100,3 +99,4 @@ class Ui_Main(object):
         self.actionClose.setText(QtGui.QApplication.translate("Main", "Close", None, QtGui.QApplication.UnicodeUTF8))
         self.actionClose.setStatusTip(QtGui.QApplication.translate("Main", "Close", None, QtGui.QApplication.UnicodeUTF8))
         self.actionClose.setShortcut(QtGui.QApplication.translate("Main", "Ctrl+Q", None, QtGui.QApplication.UnicodeUTF8))
+

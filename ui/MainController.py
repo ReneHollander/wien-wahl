@@ -7,6 +7,7 @@ from PySide.QtGui import *
 
 import os
 from ui import MainView
+from ui.ComputerPredictionController import ComputerPredictionController
 from ui.MainModel import MainModel
 
 
@@ -55,7 +56,9 @@ class MainController(QMainWindow):
             self.model.contentTableModel.save(fileName)
 
     def onclick_new(self):
-        pass
+        cpc = ComputerPredictionController()
+        cpc.show()
+        print("here")
 
     def onclick_copycs(self):
         pass
