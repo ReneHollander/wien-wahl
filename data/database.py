@@ -26,4 +26,5 @@ class WienWahlDatabase:
         self.Votes = self.Base.classes.votes
         self.session = Session(self.engine)
 
+
 db = WienWahlDatabase(create=True)

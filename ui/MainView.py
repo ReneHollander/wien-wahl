@@ -9,6 +9,7 @@
 
 from PySide import QtCore, QtGui
 
+
 class Ui_Main(object):
     def setupUi(self, Main):
         Main.setObjectName("Main")
@@ -99,4 +100,3 @@ class Ui_Main(object):
         self.actionClose.setText(QtGui.QApplication.translate("Main", "Close", None, QtGui.QApplication.UnicodeUTF8))
         self.actionClose.setStatusTip(QtGui.QApplication.translate("Main", "Close", None, QtGui.QApplication.UnicodeUTF8))
         self.actionClose.setShortcut(QtGui.QApplication.translate("Main", "Ctrl+Q", None, QtGui.QApplication.UnicodeUTF8))
-

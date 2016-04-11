@@ -4,6 +4,7 @@ Autor: Rene Hollander, Paul Kalauner 5BHIT
 from PySide.QtCore import QAbstractTableModel, Qt
 
 from PySide import QtCore
+from data.wienwahlcsv import WienWahlReader, WienWahlWriter
 
 
 class ContentTableModel(QAbstractTableModel):
@@ -31,6 +32,10 @@ class ContentTableModel(QAbstractTableModel):
             return None
         return self.list[index.row()][self.header[index.column()]]
 
+    def setData(self, *args):
+        self.list[args[0].row()][self.header[args[0].column()]] = args[1]
+        return True
+
     def headerData(self, col, orientation, role):
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             return self.header[col]
@@ -38,3 +43,16 @@ class ContentTableModel(QAbstractTableModel):
 
     def flags(self, index):
         return QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
+
+    def open(self, path):
+        with open(path) as file:
+            reader = WienWahlReader(file)
+            self.list.clear()
+            reader.collect(self.list)
+        self.generate_headers()
+        self.reset()
+
+    def save(self, path):
+        with open(path, "w") as file:
+            writer = WienWahlWriter(file)
+            writer.writeAll(self.list)

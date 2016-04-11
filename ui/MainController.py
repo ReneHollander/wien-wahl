@@ -7,7 +7,6 @@ from PySide.QtGui import *
 
 import os
 from ui import MainView
-from ui.ContentTableModel import ContentTableModel
 from ui.MainModel import MainModel
 
 
@@ -25,16 +24,15 @@ class MainController(QMainWindow):
         self.form.actionNew.triggered.connect(self.onclick_new)
         self.form.actionCopy_CS.triggered.connect(self.onclick_copycs)
 
-        self.model = MainModel()
-        self.contentTableModel = ContentTableModel(self, self.model.items)
-        self.form.contentTable.setModel(self.contentTableModel)
+        self.model = MainModel(self)
+        self.form.contentTable.setModel(self.model.contentTableModel)
 
     def onclick_open(self):
         try:
-            self.fileName = QFileDialog.getOpenFileName(self, self.tr("Open CSV File"), os.getcwd(), self.tr("CSV Files (*.csv *.tsv)"))[0]
-            self.model.read(self.fileName)
-            self.contentTableModel.generate_headers()
-            self.contentTableModel.reset()
+            fileName = QFileDialog.getOpenFileName(self, self.tr("Open CSV File"), os.getcwd(), self.tr("CSV Files (*.csv *.tsv)"))[0]
+            if fileName is not None and fileName is not "":
+                self.model.fileName = fileName
+                self.model.contentTableModel.open(self.model.fileName)
         except FileNotFoundError:
             QMessageBox.critical(self, "Read Error", "Error reading CSV File:\nFile \"" + self.fileName + "\" not found!", QMessageBox.Close)
         except csv.Error:
@@ -44,10 +42,17 @@ class MainController(QMainWindow):
             raise
 
     def onclick_save(self):
-        pass
+        if self.model.fileName is not None and self.model.fileName is not "":
+            self.model.contentTableModel.save(self.model.fileName)
+        else:
+            fileName = QFileDialog.getSaveFileName(self, caption="Save CSV File", dir=os.getcwd(), filter="CSV Files (*.csv *.tsv)")[0]
+            if fileName is not None and fileName is not "":
+                self.model.contentTableModel.save(fileName)
 
     def onclick_saveas(self):
-        pass
+        fileName = QFileDialog.getSaveFileName(self, caption="Save CSV File", dir=os.getcwd(), filter="CSV Files (*.csv *.tsv)")[0]
+        if fileName is not None and fileName is not "":
+            self.model.contentTableModel.save(fileName)
 
     def onclick_new(self):
         pass
