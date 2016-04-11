@@ -3,6 +3,8 @@ Autor: Rene Hollander, Paul Kalauner 5BHIT
 """
 from PySide.QtCore import QAbstractTableModel, Qt
 
+from PySide import QtCore
+
 
 class ContentTableModel(QAbstractTableModel):
     def __init__(self, parent, list, *args):
@@ -33,3 +35,6 @@ class ContentTableModel(QAbstractTableModel):
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             return self.header[col]
         return None
+
+    def flags(self, index):
+        return QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable

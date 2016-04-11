@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'res/ui/Main.ui'
 #
-# Created: Thu Feb 11 12:23:37 2016
+# Created: Mon Apr 11 14:14:09 2016
 #      by: pyside-uic 0.2.15 running on PySide 1.2.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -12,9 +12,14 @@ from PySide import QtCore, QtGui
 class Ui_Main(object):
     def setupUi(self, Main):
         Main.setObjectName("Main")
-        Main.resize(800, 686)
+        Main.resize(800, 600)
         self.centralwidget = QtGui.QWidget(Main)
         self.centralwidget.setObjectName("centralwidget")
+        self.gridLayout = QtGui.QGridLayout(self.centralwidget)
+        self.gridLayout.setObjectName("gridLayout")
+        self.contentTable = QtGui.QTableView(self.centralwidget)
+        self.contentTable.setObjectName("contentTable")
+        self.gridLayout.addWidget(self.contentTable, 0, 0, 1, 1)
         Main.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(Main)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 26))
@@ -31,6 +36,9 @@ class Ui_Main(object):
         self.statusbar = QtGui.QStatusBar(Main)
         self.statusbar.setObjectName("statusbar")
         Main.setStatusBar(self.statusbar)
+        self.toolBar = QtGui.QToolBar(Main)
+        self.toolBar.setObjectName("toolBar")
+        Main.addToolBar(QtCore.Qt.TopToolBarArea, self.toolBar)
         self.actionOpen = QtGui.QAction(Main)
         self.actionOpen.setObjectName("actionOpen")
         self.actionSave = QtGui.QAction(Main)
@@ -63,6 +71,8 @@ class Ui_Main(object):
 
     def retranslateUi(self, Main):
         Main.setWindowTitle(QtGui.QApplication.translate("Main", "Main", None, QtGui.QApplication.UnicodeUTF8))
+        self.contentTable.setToolTip(QtGui.QApplication.translate("Main", "Wahlergebnisse", None, QtGui.QApplication.UnicodeUTF8))
+        self.contentTable.setStatusTip(QtGui.QApplication.translate("Main", "Wahlergebnisse", None, QtGui.QApplication.UnicodeUTF8))
         self.menuFile.setToolTip(QtGui.QApplication.translate("Main", "File", None, QtGui.QApplication.UnicodeUTF8))
         self.menuFile.setStatusTip(QtGui.QApplication.translate("Main", "File", None, QtGui.QApplication.UnicodeUTF8))
         self.menuFile.setTitle(QtGui.QApplication.translate("Main", "File", None, QtGui.QApplication.UnicodeUTF8))
@@ -73,6 +83,7 @@ class Ui_Main(object):
         self.menuHelp.setToolTip(QtGui.QApplication.translate("Main", "Help", None, QtGui.QApplication.UnicodeUTF8))
         self.menuHelp.setStatusTip(QtGui.QApplication.translate("Main", "Help", None, QtGui.QApplication.UnicodeUTF8))
         self.menuHelp.setTitle(QtGui.QApplication.translate("Main", "Help", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolBar.setWindowTitle(QtGui.QApplication.translate("Main", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
         self.actionOpen.setText(QtGui.QApplication.translate("Main", "Open", None, QtGui.QApplication.UnicodeUTF8))
         self.actionOpen.setStatusTip(QtGui.QApplication.translate("Main", "Open", None, QtGui.QApplication.UnicodeUTF8))
         self.actionSave.setText(QtGui.QApplication.translate("Main", "Save", None, QtGui.QApplication.UnicodeUTF8))

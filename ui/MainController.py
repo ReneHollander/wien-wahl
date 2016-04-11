@@ -1,10 +1,14 @@
 """
 Autor: Rene Hollander 5BHIT
 """
+import csv
 
 from PySide.QtGui import *
 
+import os
 from ui import MainView
+from ui.ContentTableModel import ContentTableModel
+from ui.MainModel import MainModel
 
 
 class MainController(QMainWindow):
@@ -21,8 +25,23 @@ class MainController(QMainWindow):
         self.form.actionNew.triggered.connect(self.onclick_new)
         self.form.actionCopy_CS.triggered.connect(self.onclick_copycs)
 
+        self.model = MainModel()
+        self.contentTableModel = ContentTableModel(self, self.model.items)
+        self.form.contentTable.setModel(self.contentTableModel)
+
     def onclick_open(self):
-        pass
+        try:
+            self.fileName = QFileDialog.getOpenFileName(self, self.tr("Open CSV File"), os.getcwd(), self.tr("CSV Files (*.csv *.tsv)"))[0]
+            self.model.read(self.fileName)
+            self.contentTableModel.generate_headers()
+            self.contentTableModel.reset()
+        except FileNotFoundError:
+            QMessageBox.critical(self, "Read Error", "Error reading CSV File:\nFile \"" + self.fileName + "\" not found!", QMessageBox.Close)
+        except csv.Error:
+            QMessageBox.critical(self, "Read Error", "Error reading CSV File:\n File is not an valid CSV File!", QMessageBox.Close)
+        except:
+            QMessageBox.critical(self, "Read Error", "Error reading CSV File:\nAn unknown Error occured!", QMessageBox.Close)
+            raise
 
     def onclick_save(self):
         pass
