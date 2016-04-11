@@ -8,4 +8,3 @@ function gen {
 mkdir -p ui/
 
 gen Main
-gen ComputerPrediction
