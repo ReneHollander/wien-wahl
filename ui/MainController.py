@@ -9,6 +9,8 @@ import os
 from ui import MainView
 from ui.ComputerPredictionController import ComputerPredictionController
 from ui.MainModel import MainModel
+from ui.command import EditCommand, DuplicateRowCommand, RemoveRowsCommand
+from ui.itemdelegate import ItemDelegate
 
 
 class MainController(QMainWindow):
@@ -16,19 +18,40 @@ class MainController(QMainWindow):
         super().__init__(parent)
         self.last_value = 0
 
+        self.undoStack = QUndoStack()
+
         self.form = MainView.Ui_Main()
         self.form.setupUi(self)
 
-        self.form.actionOpen.triggered.connect(self.onclick_open)
-        self.form.actionSave.triggered.connect(self.onclick_save)
-        self.form.actionSave_As.triggered.connect(self.onclick_saveas)
-        self.form.actionNew.triggered.connect(self.onclick_new)
-        self.form.actionCopy_CS.triggered.connect(self.onclick_copycs)
+        self.form.actionOpen.triggered.connect(self.on_open)
+        self.form.actionSave.triggered.connect(self.on_save)
+        self.form.actionSave_As.triggered.connect(self.on_saveas)
+        self.form.actionNew.triggered.connect(self.on_new)
+        self.form.actionCopy.triggered.connect(self.on_copy)
+        self.form.actionPaste.triggered.connect(self.on_paste)
+        self.form.actionUndo.triggered.connect(self.on_undo)
+        self.form.actionRedo.triggered.connect(self.on_redo)
+        self.form.actionCut.triggered.connect(self.on_cut)
+        self.form.actionDuplicate_Row.triggered.connect(self.on_duplicate)
+        self.form.actionRemove_Row.triggered.connect(self.on_remove)
 
         self.model = MainModel(self)
         self.form.contentTable.setModel(self.model.contentTableModel)
+        self.form.contentTable.setItemDelegate(ItemDelegate(self.undoStack, self.set_undo_redo_text))
 
-    def onclick_open(self):
+    def set_undo_redo_text(self):
+        undo = "Undo"
+        redo = "Redo"
+        undo_text = self.undoStack.undoText()
+        redo_text = self.undoStack.redoText()
+        if undo_text:
+            undo += " \"" + undo_text + "\""
+        if redo_text:
+            redo += " \"" + redo_text + "\""
+        self.form.actionUndo.setText(undo)
+        self.form.actionRedo.setText(redo)
+
+    def on_open(self):
         try:
             fileName = QFileDialog.getOpenFileName(self, self.tr("Open CSV File"), os.getcwd(), self.tr("CSV Files (*.csv *.tsv)"))[0]
             if fileName is not None and fileName is not "":
@@ -42,7 +65,7 @@ class MainController(QMainWindow):
             QMessageBox.critical(self, "Read Error", "Error reading CSV File:\nAn unknown Error occured!", QMessageBox.Close)
             raise
 
-    def onclick_save(self):
+    def on_save(self):
         if self.model.fileName is not None and self.model.fileName is not "":
             self.model.contentTableModel.save(self.model.fileName)
         else:
@@ -50,15 +73,100 @@ class MainController(QMainWindow):
             if fileName is not None and fileName is not "":
                 self.model.contentTableModel.save(fileName)
 
-    def onclick_saveas(self):
+    def on_saveas(self):
         fileName = QFileDialog.getSaveFileName(self, caption="Save CSV File", dir=os.getcwd(), filter="CSV Files (*.csv *.tsv)")[0]
         if fileName is not None and fileName is not "":
             self.model.contentTableModel.save(fileName)
 
-    def onclick_new(self):
+    def on_new(self):
         cpc = ComputerPredictionController()
         cpc.show()
-        print("here")
 
-    def onclick_copycs(self):
-        pass
+    def on_copy(self):
+        if len(self.form.contentTable.selectionModel().selectedIndexes()) == 0:
+            return
+
+        clipboard = QApplication.clipboard()
+        selected_index = self.form.contentTable.selectionModel().selectedIndexes()[0]
+        selected_text = str(self.model.contentTableModel.data(selected_index))
+        clipboard.setText(selected_text)
+
+    def on_paste(self):
+        if len(self.form.contentTable.selectionModel().selectedIndexes()) == 0:
+            return
+
+        clipboard = QApplication.clipboard()
+        index = self.form.contentTable.selectionModel().selectedIndexes()[0]
+        command = EditCommand(self.model.contentTableModel, index)
+        command.newValue(str(clipboard.text()))
+
+        self.undoStack.beginMacro("Paste")
+        self.undoStack.push(command)
+        self.undoStack.endMacro()
+        self.set_undo_redo_text()
+        self.form.contentTable.reset()
+
+    def on_undo(self):
+        self.undoStack.undo()
+        self.set_undo_redo_text()
+        self.form.contentTable.reset()
+
+    def on_redo(self):
+        self.undoStack.redo()
+        self.set_undo_redo_text()
+        self.form.contentTable.reset()
+
+    def get_zero_column_selected_indexes(self):
+        selected_indexes = self.form.contentTable.selectedIndexes()
+        if not selected_indexes:
+            return
+        return [index for index in selected_indexes if not index.column()]
+
+    def get_selection(self):
+        zero_column_selected_indexes = self.get_zero_column_selected_indexes()
+        if not zero_column_selected_indexes:
+            return self.model.contentTableModel.rowCount(self), 1
+        first_zero_column_selected_index = zero_column_selected_indexes[0]
+        zero_column_selected_indexes = self.get_zero_column_selected_indexes()
+
+        if not first_zero_column_selected_index or not first_zero_column_selected_index.isValid():
+            return False
+        startingrow = first_zero_column_selected_index.row()
+
+        return startingrow, len(zero_column_selected_indexes)
+
+    def on_duplicate(self):
+        if len(self.view.tableView.selectionModel().selectedIndexes()) == 0:
+            QMessageBox.critical(self, "Error", "You must select the first column of the row you want to duplicate")
+            return
+
+        start, amount = self.get_selection()
+        self.undoStack.beginMacro("Duplicate Row")
+        self.undoStack.push(DuplicateRowCommand(self.model.contentTableModel, start))
+        self.undoStack.endMacro()
+        self.set_undo_redo_text()
+        self.form.contentTable.reset()
+
+    def on_cut(self):
+        self.copy()
+        index = self.form.contentTable.selectionModel().selectedIndexes()[0]
+        command = EditCommand(self.model.contentTableModel, index)
+        command.newValue("")
+        self.undoStack.beginMacro("Cut")
+        self.undoStack.push(command)
+        self.undoStack.endMacro()
+        self.set_undo_redo_text()
+        self.form.contentTable.reset()
+
+    def on_remove(self):
+        if len(self.model.contentTableModel.list) == 0:
+            QMessageBox.critical(self, "Error", "Removing rows from an empty table is not possible.")
+            return
+        start, amount = self.get_selection()
+        if start != len(self.model.contentTableModel.list):
+            self.undoStack.beginMacro("Remove Row(s)")
+            self.undoStack.push(RemoveRowsCommand(self.model.contentTableModel, start, amount))
+            self.undoStack.endMacro()
+            self.set_undo_redo_text()
+        else:
+            QMessageBox.critical(self, "Error", "You need to choose the rows you want to remove by selecting the cells in the first column")

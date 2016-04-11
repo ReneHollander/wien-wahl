@@ -1,10 +1,12 @@
 """
 Autor: Rene Hollander, Paul Kalauner 5BHIT
 """
-from PySide.QtCore import QAbstractTableModel, Qt
+from PySide.QtCore import QAbstractTableModel, Qt, SIGNAL, QModelIndex
 
 from PySide import QtCore
 from data.wienwahlcsv import WienWahlReader, WienWahlWriter
+from natsort import natsorted
+from operator import itemgetter
 
 
 class ContentTableModel(QAbstractTableModel):
@@ -25,7 +27,7 @@ class ContentTableModel(QAbstractTableModel):
     def columnCount(self, parent):
         return len(self.header)
 
-    def data(self, index, role):
+    def data(self, index, role=Qt.DisplayRole):
         if not index.isValid():
             return None
         elif role != Qt.DisplayRole:
@@ -56,3 +58,36 @@ class ContentTableModel(QAbstractTableModel):
         with open(path, "w") as file:
             writer = WienWahlWriter(file)
             writer.writeAll(self.list)
+
+    def duplicateRow(self, row_index, parent=QModelIndex()):
+        self.beginInsertRows(parent, row_index, 1)
+        row = self.list[row_index].copy()
+        self.list.insert(row_index + 1, {key: "" for key in self.header})
+        self.list[row_index + 1] = row
+        self.endInsertRows()
+
+    def insertRows(self, row, count, parent=QModelIndex()):
+        self.beginInsertRows(parent, row, row + count - 1)
+        for i in range(count):
+            self.list.insert(row, {key: "" for key in self.header})
+        self.endInsertRows()
+        return True
+
+    def removeRows(self, row, count, parent=QModelIndex()):
+        self.beginRemoveRows(parent, row, row + count - 1)
+        del self.list[row:row + count]
+        self.endRemoveRows()
+        return True
+
+    def sort(self, ncol, order):
+        if len(self.list) == 0:
+            return
+        self.emit(SIGNAL("layoutToBeChanged()"))
+        self.list = natsorted(self.list, key=itemgetter(self.header[ncol]), reverse=(order == Qt.DescendingOrder))
+        self.emit(SIGNAL("layoutChanged()"))
+
+    def set_list(self, datalist, header):
+        self.emit(SIGNAL("layoutToBeChanged()"))
+        self.list = datalist
+        self.header = header
+        self.emit(SIGNAL("layoutChanged()"))
