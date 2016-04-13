@@ -1,3 +1,7 @@
+DROP DATABASE IF EXISTS wienwahl;
+CREATE DATABASE wienwahl;
+USE wienwahl;
+
 CREATE TABLE election (
   nr INTEGER AUTO_INCREMENT,
   dt DATE,
@@ -19,16 +23,6 @@ CREATE TABLE district (
   FOREIGN KEY(cnr) REFERENCES constituency(nr)
 );
 
-CREATE TABLE judicaldistrict (
-  enr INTEGER,
-  dnr INTEGER,
-  nr INTEGER,
-  name VARCHAR(64),
-  PRIMARY KEY(enr, dnr, nr),
-  FOREIGN KEY(enr) REFERENCES election(nr),
-  FOREIGN KEY(dnr) REFERENCES district(nr)
-);
-
 CREATE TABLE party (
   nr INTEGER AUTO_INCREMENT,
   abbr VARCHAR(16),
@@ -47,6 +41,18 @@ CREATE TABLE candidacy (
   FOREIGN KEY(enr) REFERENCES election(nr)
 );
 
+CREATE TABLE judicaldistrict (
+  enr INTEGER,
+  dnr INTEGER,
+  nr INTEGER,
+  electivecnt INTEGER,
+  invalidcnt INTEGER,
+  votecnt INTEGER,
+  PRIMARY KEY(enr, dnr, nr),
+  FOREIGN KEY(enr) REFERENCES election(nr),
+  FOREIGN KEY(dnr) REFERENCES district(nr)
+);
+
 CREATE TABLE votes (
   enr INTEGER,
   dnr INTEGER,
@@ -54,10 +60,35 @@ CREATE TABLE votes (
   pnr INTEGER,
   cnt INTEGER,
   PRIMARY KEY(enr, dnr, jdnr, pnr),
-  FOREIGN KEY(enr) REFERENCES election(nr),
-  FOREIGN KEY(dnr) REFERENCES district(nr),
-  FOREIGN KEY(jdnr) REFERENCES judicaldistrict(nr),
+  FOREIGN KEY(enr, dnr, jdnr) REFERENCES judicaldistrict(enr, dnr, nr),
   FOREIGN KEY(pnr) REFERENCES party(nr)
+);
+
+CREATE TABLE totalvotes (
+  enr INTEGER,
+  pnr INTEGER,
+  cnt INTEGER,
+  PRIMARY KEY(enr, pnr),
+  FOREIGN KEY(enr) REFERENCES election(nr),
+  FOREIGN KEY(pnr) REFERENCES party(nr)
+);
+
+CREATE TABLE projection (
+  enr INTEGER,
+  ts TIME,
+  PRIMARY KEY(enr, ts),
+  FOREIGN KEY(enr) REFERENCES election(nr)
+);
+
+CREATE TABLE projectionresult (
+  enr INTEGER,
+  pnr INTEGER,
+  ts TIME,
+  percentage REAL,
+  PRIMARY KEY(enr, pnr, ts),
+  FOREIGN KEY(enr) REFERENCES election(nr),
+  FOREIGN KEY(pnr) REFERENCES party(nr),
+  FOREIGN KEY(enr, ts) REFERENCES projection(enr, ts)
 );
 
 INSERT INTO election(dt, seats) VALUES('2015-10-11', 100);
@@ -266,3 +297,47 @@ INSERT INTO candidacy(cnr, enr, pnr, listplace) VALUES(1,1,12,12);
 INSERT INTO candidacy(cnr, enr, pnr, listplace) VALUES(15,1,9,9);
 INSERT INTO candidacy(cnr, enr, pnr, listplace) VALUES(16,1,10,10);
 INSERT INTO candidacy(cnr, enr, pnr, listplace) VALUES(17,1,11,11);
+
+DELIMITER //
+CREATE TRIGGER trigger_vote_insert AFTER INSERT ON votes FOR EACH ROW
+BEGIN
+	IF (SELECT enr FROM votes WHERE enr = NEW.enr AND pnr = NEW.pnr) THEN
+		UPDATE totalvotes SET cnt = cnt + NEW.cnt WHERE enr=NEW.enr AND pnr=NEW.pnr;
+	ELSE
+		INSERT INTO totalvotes VALUES(NEW.enr, NEW.pnr, NEW.pnr);
+	END IF;
+END;//
+DELIMITER ;
+
+DELIMITER //
+CREATE TRIGGER trigger_vote_update AFTER UPDATE ON votes FOR EACH ROW
+BEGIN
+	UPDATE totalvotes SET cnt = cnt + (NEW.cnt - OLD.cnt) WHERE enr=NEW.enr AND pnr=NEW.pnr;
+END;//
+DELIMITER ;
+
+DELIMITER //
+CREATE TRIGGER trigger_vote_delete AFTER DELETE ON votes FOR EACH ROW
+BEGIN
+	UPDATE totalvotes SET cnt = cnt - OLD.cnt WHERE enr=OLD.enr AND pnr=OLD.pnr;
+END;//
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE create_projection(IN enr INT, IN ts TIME)
+BEGIN
+	DECLARE totalVotes INT DEFAULT 0;
+	DECLARE n INT DEFAULT 0;
+	DECLARE i INT DEFAULT 0;
+
+	INSERT INTO projection VALUES(enr, ts);
+
+	SELECT SUM(cnt) FROM totalvotes INTO totalVotes;
+	SELECT COUNT(*) FROM party INTO n;
+	SET i=1;
+	WHILE i<=n DO
+		INSERT INTO projectionresult VALUES(enr, ts, i, COALESCE((SELECT cnt FROM totalvotes WHERE enr = enr AND pnr = i)/totalVotes * 100, 0));
+		SET i = i + 1;
+	END WHILE;
+END; //
+DELIMITER ;

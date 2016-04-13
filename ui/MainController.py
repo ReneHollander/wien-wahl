@@ -2,10 +2,13 @@
 Autor: Rene Hollander 5BHIT
 """
 import csv
+import sys
 
 from PySide.QtGui import *
 
 import os
+from data.database import WienWahlDatabase
+from data.dbconfig import DBConfig
 from ui import MainView
 from ui.ComputerPredictionController import ComputerPredictionController
 from ui.MainModel import MainModel
@@ -34,10 +37,17 @@ class MainController(QMainWindow):
         self.form.actionCut.triggered.connect(self.on_cut)
         self.form.actionDuplicate_Row.triggered.connect(self.on_duplicate)
         self.form.actionRemove_Row.triggered.connect(self.on_remove)
+        self.form.actionInsert_Row.triggered.connect(self.on_insert)
+        self.form.actionConnectDisconnect.triggered.connect(self.on_connectdisconnect)
+        self.form.actionLoad.triggered.connect(self.on_load)
+        self.form.actionWrite.triggered.connect(self.on_write)
+        self.form.actionCreate_Projection.triggered.connect(self.on_create_projection)
 
         self.model = MainModel(self)
         self.form.contentTable.setModel(self.model.contentTableModel)
         self.form.contentTable.setItemDelegate(ItemDelegate(self.undoStack, self.set_undo_redo_text))
+
+        self.wienwahldb = None
 
     def set_undo_redo_text(self):
         undo = "Undo"
@@ -50,6 +60,49 @@ class MainController(QMainWindow):
             redo += " \"" + redo_text + "\""
         self.form.actionUndo.setText(undo)
         self.form.actionRedo.setText(redo)
+
+    def on_connectdisconnect(self):
+        if self.wienwahldb is None:
+            try:
+                self.wienwahldb = WienWahlDatabase(connectionstring=DBConfig.connection_string, electiondate="2015-10-11")
+                QMessageBox.information(self, "Connected to database", "Successfully connected to database")
+                self.form.actionConnectDisconnect.setText("Disconnect")
+                self.form.actionConnectDisconnect.setToolTip("Disconnect")
+                self.form.actionConnectDisconnect.setStatusTip("Disconnect")
+                self.form.actionConnectDisconnect.setIconText("Disconnect")
+                self.form.actionLoad.setEnabled(True)
+                self.form.actionWrite.setEnabled(True)
+                self.form.actionCreate_Projection.setEnabled(True)
+            except:
+                QMessageBox.critical(self, "Connect Error", "Error connecting to Database:\n" + sys.exc_info()[0], QMessageBox.Close)
+                raise
+        else:
+            self.form.actionConnectDisconnect.setText("Connect")
+            self.form.actionConnectDisconnect.setToolTip("Connect")
+            self.form.actionConnectDisconnect.setStatusTip("Connect")
+            self.form.actionConnectDisconnect.setIconText("Connect")
+            self.form.actionLoad.setEnabled(False)
+            self.form.actionWrite.setEnabled(False)
+            self.form.actionCreate_Projection.setEnabled(False)
+            self.wienwahldb.close()
+            self.wienwahldb = None
+            QMessageBox.information(self, "Disconnected from database", "Successfully disconnected from database")
+
+    def on_insert(self):
+        pass
+
+    def on_load(self):
+        data = self.wienwahldb.load()
+        self.model.contentTableModel.set_list(data)
+        QMessageBox.information(self, "Loaded from database", "Successfully loaded all entries from the database")
+
+    def on_write(self):
+        self.wienwahldb.write(self.model.contentTableModel.list)
+        QMessageBox.information(self, "Written to database", "Successfully wrote all entries to the database")
+
+    def on_create_projection(self):
+        cpc = ComputerPredictionController()
+        cpc.show()
 
     def on_open(self):
         try:
@@ -79,8 +132,7 @@ class MainController(QMainWindow):
             self.model.contentTableModel.save(fileName)
 
     def on_new(self):
-        cpc = ComputerPredictionController()
-        cpc.show()
+        pass
 
     def on_copy(self):
         if len(self.form.contentTable.selectionModel().selectedIndexes()) == 0:

@@ -18,6 +18,7 @@ class ContentTableModel(QAbstractTableModel):
 
     def generate_headers(self):
         if len(self.list) > 0:
+            self.header = []
             for key in self.list[0]:
                 self.header.append(key)
 
@@ -86,8 +87,11 @@ class ContentTableModel(QAbstractTableModel):
         self.list = natsorted(self.list, key=itemgetter(self.header[ncol]), reverse=(order == Qt.DescendingOrder))
         self.emit(SIGNAL("layoutChanged()"))
 
-    def set_list(self, datalist, header):
+    def set_list(self, datalist, header=None):
         self.emit(SIGNAL("layoutToBeChanged()"))
         self.list = datalist
-        self.header = header
+        if header is None:
+            self.generate_headers()
+        else:
+            self.header = header
         self.emit(SIGNAL("layoutChanged()"))
