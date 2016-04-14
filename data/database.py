@@ -48,7 +48,7 @@ class WienWahlDatabase:
 
         parties = {}
         for key in data[0].keys():
-            if key not in ["SPR", "BZ", "WBER", "ABG.", "UNG.", "T", "WV", "WK"]:
+            if key not in ["SPR", "BZ", "WBER", "ABG", "UNG", "T", "WV", "WK"]:
                 parties[key] = self.session.query(self.Party.nr).filter(self.Party.abbr == key).first()[0]
 
         districts = []
@@ -60,8 +60,8 @@ class WienWahlDatabase:
                 dnr=int(line["BZ"]),
                 nr=int(line["SPR"]),
                 electivecnt=int(line["WBER"]),
-                invalidcnt=int(line["UNG."]),
-                votecnt=int(line["ABG."])
+                invalidcnt=int(line["UNG"]),
+                votecnt=int(line["ABG"])
             ))
             for party, pnr in parties.items():
                 votes.append(self.Votes(
@@ -77,7 +77,7 @@ class WienWahlDatabase:
 
     def load(self):
 
-        header = OrderedSet(["WK", "BZ", "SPR", "WBER", "ABG.", "UNG."])
+        header = OrderedSet(["WK", "BZ", "SPR", "WBER", "ABG", "UNG"])
         parties = {}
         for party in self.session.query(self.Party).all():
             parties[party.nr] = party.abbr
@@ -103,8 +103,8 @@ class WienWahlDatabase:
                     "BZ": row["dnr"],
                     "SPR": row["jdnr"],
                     "WBER": row["electivecnt"],
-                    "ABG.": row["votecnt"],
-                    "UNG.": row["invalidcnt"],
+                    "ABG": row["votecnt"],
+                    "UNG": row["invalidcnt"],
                     "T": 4,
                     "WV": 1,
                 }

@@ -111,6 +111,10 @@ class MainController(QMainWindow):
 
     def on_create_projection(self):
         projection_data = self.wienwahldb.create_projection()
+        print("Hochrechnung:")
+        for key, value in projection_data.items():
+            print(key + ": " + str(value))
+        print("\n")
         ind = numpy.arange(len(projection_data))
         width = 0.5
         plt.bar(ind, list(projection_data.values()), width, color='r')
