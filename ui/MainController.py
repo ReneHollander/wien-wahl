@@ -10,10 +10,11 @@ import os
 from data.database import WienWahlDatabase
 from data.dbconfig import DBConfig
 from ui import MainView
-from ui.ComputerPredictionController import ComputerPredictionController
 from ui.MainModel import MainModel
 from ui.command import EditCommand, DuplicateRowCommand, RemoveRowsCommand
 from ui.itemdelegate import ItemDelegate
+import numpy
+from matplotlib import pyplot as plt
 
 
 class MainController(QMainWindow):
@@ -101,8 +102,16 @@ class MainController(QMainWindow):
         QMessageBox.information(self, "Written to database", "Successfully wrote all entries to the database")
 
     def on_create_projection(self):
-        cpc = ComputerPredictionController()
-        cpc.show()
+        projection_data = self.wienwahldb.create_projection()
+        ind = numpy.arange(len(projection_data))
+        width = 0.5
+        plt.bar(ind, list(projection_data.values()), width, color='r')
+        plt.ylabel('%')
+        plt.xlabel('Parteien')
+        plt.title('Wien Wahl Hochrechnung')
+        plt.xticks(ind + width / 2, list(projection_data.keys()))
+        plt.yticks(numpy.arange(0, 61, 5))
+        plt.show()
 
     def on_open(self):
         try:

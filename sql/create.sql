@@ -297,46 +297,46 @@ INSERT INTO candidacy(cnr, enr, pnr, listplace) VALUES(1,1,12,12);
 INSERT INTO candidacy(cnr, enr, pnr, listplace) VALUES(15,1,9,9);
 INSERT INTO candidacy(cnr, enr, pnr, listplace) VALUES(16,1,10,10);
 INSERT INTO candidacy(cnr, enr, pnr, listplace) VALUES(17,1,11,11);
-
+--
 DELIMITER //
 CREATE TRIGGER trigger_vote_insert AFTER INSERT ON votes FOR EACH ROW
 BEGIN
-	IF (SELECT enr FROM votes WHERE enr = NEW.enr AND pnr = NEW.pnr) THEN
+	IF (SELECT enr FROM totalvotes WHERE enr = NEW.enr AND pnr = NEW.pnr) THEN
 		UPDATE totalvotes SET cnt = cnt + NEW.cnt WHERE enr=NEW.enr AND pnr=NEW.pnr;
 	ELSE
 		INSERT INTO totalvotes VALUES(NEW.enr, NEW.pnr, NEW.pnr);
 	END IF;
 END;//
 DELIMITER ;
-
+--
 DELIMITER //
 CREATE TRIGGER trigger_vote_update AFTER UPDATE ON votes FOR EACH ROW
 BEGIN
 	UPDATE totalvotes SET cnt = cnt + (NEW.cnt - OLD.cnt) WHERE enr=NEW.enr AND pnr=NEW.pnr;
 END;//
 DELIMITER ;
-
+--
 DELIMITER //
 CREATE TRIGGER trigger_vote_delete AFTER DELETE ON votes FOR EACH ROW
 BEGIN
 	UPDATE totalvotes SET cnt = cnt - OLD.cnt WHERE enr=OLD.enr AND pnr=OLD.pnr;
 END;//
 DELIMITER ;
-
+--
 DELIMITER //
 CREATE PROCEDURE create_projection(IN enr INT, IN ts TIME)
 BEGIN
 	DECLARE totalVotes INT DEFAULT 0;
 	DECLARE n INT DEFAULT 0;
 	DECLARE i INT DEFAULT 0;
-
+--
 	INSERT INTO projection VALUES(enr, ts);
-
+--
 	SELECT SUM(cnt) FROM totalvotes INTO totalVotes;
 	SELECT COUNT(*) FROM party INTO n;
 	SET i=1;
 	WHILE i<=n DO
-		INSERT INTO projectionresult VALUES(enr, ts, i, COALESCE((SELECT cnt FROM totalvotes WHERE enr = enr AND pnr = i)/totalVotes * 100, 0));
+		INSERT INTO projectionresult VALUES(enr, i, ts, COALESCE((SELECT cnt FROM totalvotes WHERE enr = enr AND pnr = i)/totalVotes * 100, 0));
 		SET i = i + 1;
 	END WHILE;
 END; //

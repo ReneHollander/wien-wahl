@@ -1,5 +1,5 @@
 from datetime import datetime
-
+import time
 from data.dbconfig import DBConfig
 from data.wienwahlcsv import WienWahlReader
 from sqlalchemy import create_engine
@@ -121,19 +121,36 @@ class WienWahlDatabase:
         cursor.callproc("create_projection", [self.enr, ts])
         cursor.close()
         connection.commit()
-
         self.session.commit()
-        query = "SELECT * FROM projectionresult WHERE enr = '" + str(self.enr) + "' AND ts = '" + ts + "'"
-        result = self.session.execute(query).fetchall()
-        print(result)
 
+        result = self.session.query(self.Party.abbr, self.ProjectionResult.percentage) \
+            .select_from(self.Party).join(self.ProjectionResult, self.Party.nr == self.ProjectionResult.pnr) \
+            .filter(self.ProjectionResult.enr == self.enr, self.ProjectionResult.ts == ts)\
+            .all()
+        data = {}
+        for row in result:
+            data[row.abbr] = float(row.percentage)
+        return data
 
-wienwahldb = WienWahlDatabase(connectionstring=DBConfig.connection_string, electiondate="2015-10-11")
-
-data = []
-with open("test.csv") as file:
-    reader = WienWahlReader(file)
-    reader.collect(data)
-wienwahldb.write(data)
-data = wienwahldb.load()
-print(wienwahldb.create_projection())
+#
+# wienwahldb = WienWahlDatabase(connectionstring=DBConfig.connection_string, electiondate="2015-10-11")
+#
+# data = []
+# with open("test.csv") as file:
+#     reader = WienWahlReader(file)
+#     reader.collect(data)
+#
+# start = int(round(time.time() * 1000))
+# wienwahldb.write(data)
+# end = int(round(time.time() * 1000))
+# print("Write: " + str(end - start) + "ms")
+#
+# start = int(round(time.time() * 1000))
+# wienwahldb.load()
+# end = int(round(time.time() * 1000))
+# print("Load: " + str(end - start) + "ms")
+#
+# start = int(round(time.time() * 1000))
+# print(wienwahldb.create_projection())
+# end = int(round(time.time() * 1000))
+# print("Create Projection: " + str(end - start) + "ms")
