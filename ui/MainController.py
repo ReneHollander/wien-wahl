@@ -188,7 +188,7 @@ class MainController(QMainWindow):
         return startingrow, len(zero_column_selected_indexes)
 
     def on_duplicate(self):
-        if len(self.view.tableView.selectionModel().selectedIndexes()) == 0:
+        if len(self.form.contentTable.selectionModel().selectedIndexes()) == 0:
             QMessageBox.critical(self, "Error", "You must select the first column of the row you want to duplicate")
             return
 
@@ -200,7 +200,7 @@ class MainController(QMainWindow):
         self.form.contentTable.reset()
 
     def on_cut(self):
-        self.copy()
+        self.on_copy()
         index = self.form.contentTable.selectionModel().selectedIndexes()[0]
         command = EditCommand(self.model.contentTableModel, index)
         command.newValue("")
