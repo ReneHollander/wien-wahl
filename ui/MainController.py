@@ -11,7 +11,7 @@ from data.database import WienWahlDatabase
 from data.dbconfig import DBConfig
 from ui import MainView
 from ui.MainModel import MainModel
-from ui.command import EditCommand, DuplicateRowCommand, RemoveRowsCommand
+from ui.command import EditCommand, DuplicateRowCommand, RemoveRowsCommand, InsertRowsCommand
 from ui.itemdelegate import ItemDelegate
 import numpy
 from matplotlib import pyplot as plt
@@ -90,7 +90,15 @@ class MainController(QMainWindow):
             QMessageBox.information(self, "Disconnected from database", "Successfully disconnected from database")
 
     def on_insert(self):
-        pass
+        if len(self.model.contentTableModel.header) == 0:
+            QMessageBox.critical(self, "Error", "Adding rows to an empty table without a header is not possible.")
+            return
+        start, amount = self.get_selection()
+
+        self.undoStack.beginMacro("Add Row")
+        self.undoStack.push(InsertRowsCommand(self.model.contentTableModel, start, 1))
+        self.undoStack.endMacro()
+        self.set_undo_redo_text()
 
     def on_load(self):
         data = self.wienwahldb.load()
@@ -117,8 +125,13 @@ class MainController(QMainWindow):
         try:
             fileName = QFileDialog.getOpenFileName(self, self.tr("Open CSV File"), os.getcwd(), self.tr("CSV Files (*.csv *.tsv)"))[0]
             if fileName is not None and fileName is not "":
+                append_or_override = False
+                if self.model.fileName is not None:
+                    append_or_override = self.show_append_override_dialog()
                 self.model.fileName = fileName
-                self.model.contentTableModel.open(self.model.fileName)
+                self.model.contentTableModel.open(self.model.fileName, clear=append_or_override)
+                self.undoStack.clear()
+                self.set_undo_redo_text()
         except FileNotFoundError:
             QMessageBox.critical(self, "Read Error", "Error reading CSV File:\nFile \"" + self.fileName + "\" not found!", QMessageBox.Close)
         except csv.Error:
@@ -141,7 +154,10 @@ class MainController(QMainWindow):
             self.model.contentTableModel.save(fileName)
 
     def on_new(self):
-        pass
+        self.model.fileName = None
+        self.model.contentTableModel.set_list([], [])
+        self.undoStack.clear()
+        self.set_undo_redo_text()
 
     def on_copy(self):
         if len(self.form.contentTable.selectionModel().selectedIndexes()) == 0:
@@ -231,3 +247,11 @@ class MainController(QMainWindow):
             self.set_undo_redo_text()
         else:
             QMessageBox.critical(self, "Error", "You need to choose the rows you want to remove by selecting the cells in the first column")
+
+    def show_append_override_dialog(self):
+        msgBox = QMessageBox()
+        msgBox.setWindowTitle("Append or Override")
+        msgBox.setText("Append or override the current entries?")
+        msgBox.addButton("Append", QMessageBox.YesRole)
+        msgBox.addButton("Override", QMessageBox.NoRole)
+        return msgBox.exec_()

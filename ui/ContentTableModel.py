@@ -47,10 +47,11 @@ class ContentTableModel(QAbstractTableModel):
     def flags(self, index):
         return QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
 
-    def open(self, path):
+    def open(self, path, clear=True):
         with open(path) as file:
             reader = WienWahlReader(file)
-            self.list.clear()
+            if clear:
+                self.list.clear()
             reader.collect(self.list)
         self.generate_headers()
         self.reset()
