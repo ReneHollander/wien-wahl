@@ -22,10 +22,10 @@ class ContentTableModel(QAbstractTableModel):
             for key in self.list[0]:
                 self.header.append(key)
 
-    def rowCount(self, parent):
+    def rowCount(self, parent=None):
         return len(self.list)
 
-    def columnCount(self, parent):
+    def columnCount(self, parent=None):
         return len(self.header)
 
     def data(self, index, role=Qt.DisplayRole):
@@ -53,31 +53,31 @@ class ContentTableModel(QAbstractTableModel):
             if clear:
                 self.list.clear()
             reader.collect(self.list)
-        self.generate_headers()
+            self.header = reader.headers()
+
         self.reset()
 
     def save(self, path):
         with open(path, "w") as file:
-            writer = WienWahlWriter(file)
+            writer = WienWahlWriter(file, self.header)
             writer.writeAll(self.list)
 
     def duplicateRow(self, row_index, parent=QModelIndex()):
-        self.beginInsertRows(parent, row_index, 1)
+        self.beginInsertRows(parent, row_index, row_index + 1)
         row = self.list[row_index].copy()
         self.list.insert(row_index + 1, {key: "" for key in self.header})
         self.list[row_index + 1] = row
         self.endInsertRows()
 
-    def insertRows(self, row, count, parent=QModelIndex()):
-        self.beginInsertRows(parent, row, row + count - 1)
-        for i in range(count):
-            self.list.insert(row, {key: "" for key in self.header})
+    def insertRow(self, row, parent=QModelIndex()):
+        self.beginInsertRows(parent, row, row + 1)
+        self.list.insert(row, {key: "" for key in self.header})
         self.endInsertRows()
         return True
 
-    def removeRows(self, row, count, parent=QModelIndex()):
-        self.beginRemoveRows(parent, row, row + count - 1)
-        del self.list[row:row + count]
+    def removeRow(self, row, parent=QModelIndex()):
+        self.beginRemoveRows(parent, row, row + 1)
+        del self.list[row]
         self.endRemoveRows()
         return True
 

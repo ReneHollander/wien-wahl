@@ -7,11 +7,11 @@ import sys
 from PySide.QtGui import *
 
 import os
-from data.database import WienWahlDatabase
+from data.database import WienWahlDatabase, default_header
 from data.dbconfig import DBConfig
 from ui import MainView
 from ui.MainModel import MainModel
-from ui.command import EditCommand, DuplicateRowCommand, RemoveRowsCommand, InsertRowsCommand
+from ui.command import EditCommand, DuplicateRowCommand, RemoveRowCommand, InsertRowCommand
 from ui.itemdelegate import ItemDelegate
 import numpy
 from matplotlib import pyplot as plt
@@ -65,15 +65,19 @@ class MainController(QMainWindow):
     def on_connectdisconnect(self):
         if self.wienwahldb is None:
             try:
-                self.wienwahldb = WienWahlDatabase(connectionstring=DBConfig.connection_string, electiondate="2015-10-11")
-                QMessageBox.information(self, "Connected to database", "Successfully connected to database")
-                self.form.actionConnectDisconnect.setText("Disconnect")
-                self.form.actionConnectDisconnect.setToolTip("Disconnect")
-                self.form.actionConnectDisconnect.setStatusTip("Disconnect")
-                self.form.actionConnectDisconnect.setIconText("Disconnect")
-                self.form.actionLoad.setEnabled(True)
-                self.form.actionWrite.setEnabled(True)
-                self.form.actionCreate_Projection.setEnabled(True)
+                connection_string, ok = QInputDialog.getText(self, "Connection String", "Please enter the Database Connection String", QLineEdit.Normal, DBConfig.connection_string)
+                if ok:
+                    election_date, ok = QInputDialog.getText(self, "Election Date", "Please enter the Election Date", QLineEdit.Normal, "2015-10-11")
+                    if ok:
+                        self.wienwahldb = WienWahlDatabase(connectionstring=connection_string, electiondate=election_date)
+                        QMessageBox.information(self, "Connected to database", "Successfully connected to database")
+                        self.form.actionConnectDisconnect.setText("Disconnect")
+                        self.form.actionConnectDisconnect.setToolTip("Disconnect")
+                        self.form.actionConnectDisconnect.setStatusTip("Disconnect")
+                        self.form.actionConnectDisconnect.setIconText("Disconnect")
+                        self.form.actionLoad.setEnabled(True)
+                        self.form.actionWrite.setEnabled(True)
+                        self.form.actionCreate_Projection.setEnabled(True)
             except:
                 QMessageBox.critical(self, "Connect Error", "Error connecting to Database:\n" + sys.exc_info()[0], QMessageBox.Close)
                 raise
@@ -89,20 +93,9 @@ class MainController(QMainWindow):
             self.wienwahldb = None
             QMessageBox.information(self, "Disconnected from database", "Successfully disconnected from database")
 
-    def on_insert(self):
-        if len(self.model.contentTableModel.header) == 0:
-            QMessageBox.critical(self, "Error", "Adding rows to an empty table without a header is not possible.")
-            return
-        start, amount = self.get_selection()
-
-        self.undoStack.beginMacro("Add Row")
-        self.undoStack.push(InsertRowsCommand(self.model.contentTableModel, start, 1))
-        self.undoStack.endMacro()
-        self.set_undo_redo_text()
-
     def on_load(self):
-        data = self.wienwahldb.load()
-        self.model.contentTableModel.set_list(data)
+        header, data = self.wienwahldb.load()
+        self.model.contentTableModel.set_list(data, header=header)
         QMessageBox.information(self, "Loaded from database", "Successfully loaded all entries from the database")
 
     def on_write(self):
@@ -158,10 +151,13 @@ class MainController(QMainWindow):
             self.model.contentTableModel.save(fileName)
 
     def on_new(self):
-        self.model.fileName = None
-        self.model.contentTableModel.set_list([], [])
-        self.undoStack.clear()
-        self.set_undo_redo_text()
+        text, ok = QInputDialog.getText(self, "Parties", "Enter the parties here, separated with ';'", QLineEdit.Normal, "SPOE;FPOE;OEVP;GRUE;NEOS;WWW;ANDAS;GFW;SLP;WIFF;M;FREIE")
+        if ok:
+            headers = default_header + text.split(";")
+            self.model.fileName = None
+            self.model.contentTableModel.set_list([], header=headers)
+            self.undoStack.clear()
+            self.set_undo_redo_text()
 
     def on_copy(self):
         if len(self.form.contentTable.selectionModel().selectedIndexes()) == 0:
@@ -179,7 +175,7 @@ class MainController(QMainWindow):
         clipboard = QApplication.clipboard()
         index = self.form.contentTable.selectionModel().selectedIndexes()[0]
         command = EditCommand(self.model.contentTableModel, index)
-        command.newValue(str(clipboard.text()))
+        command.newValue = str(clipboard.text())
 
         self.undoStack.beginMacro("Paste")
         self.undoStack.push(command)
@@ -196,6 +192,56 @@ class MainController(QMainWindow):
         self.undoStack.redo()
         self.set_undo_redo_text()
         self.form.contentTable.reset()
+
+    def on_duplicate(self):
+        if self.get_selected_cell() is not None:
+            index = self.form.contentTable.model().index(self.get_selected_cell()[1], self.get_selected_cell()[0])
+            self.undoStack.beginMacro("Duplicate Row")
+            self.undoStack.push(DuplicateRowCommand(self.model.contentTableModel, self.get_selected_cell()))
+            self.undoStack.endMacro()
+            self.set_undo_redo_text()
+            self.form.contentTable.reset()
+            self.form.contentTable.selectionModel().select(index, QItemSelectionModel.Select)
+
+    def on_insert(self):
+        if self.get_selected_row() is not None:
+            self.undoStack.beginMacro("Add Row")
+            self.undoStack.push(InsertRowCommand(self.model.contentTableModel, self.get_selected_row() + 1))
+            self.undoStack.endMacro()
+            self.set_undo_redo_text()
+        else:
+            self.undoStack.beginMacro("Add Row")
+            self.undoStack.push(InsertRowCommand(self.model.contentTableModel, 0))
+            self.undoStack.endMacro()
+            self.set_undo_redo_text()
+
+    def on_cut(self):
+        self.on_copy()
+        index = self.form.contentTable.selectionModel().selectedIndexes()[0]
+        command = EditCommand(self.model.contentTableModel, index)
+        command.newValue = ""
+        self.undoStack.beginMacro("Cut")
+        self.undoStack.push(command)
+        self.undoStack.endMacro()
+        self.set_undo_redo_text()
+        self.form.contentTable.reset()
+
+    def on_remove(self):
+        if self.get_selected_row() is not None:
+            index = self.form.contentTable.model().index(self.get_selected_cell()[1], self.get_selected_cell()[0])
+            self.undoStack.beginMacro("Remove Row")
+            self.undoStack.push(RemoveRowCommand(self.model.contentTableModel, self.get_selected_row()))
+            self.undoStack.endMacro()
+            self.set_undo_redo_text()
+            self.form.contentTable.selectionModel().select(index, QItemSelectionModel.Select)
+
+    def show_append_override_dialog(self):
+        msgBox = QMessageBox()
+        msgBox.setWindowTitle("Append or Override")
+        msgBox.setText("Append or override the current entries?")
+        msgBox.addButton("Append", QMessageBox.YesRole)
+        msgBox.addButton("Override", QMessageBox.NoRole)
+        return msgBox.exec_()
 
     def get_zero_column_selected_indexes(self):
         selected_indexes = self.form.contentTable.selectedIndexes()
@@ -216,46 +262,25 @@ class MainController(QMainWindow):
 
         return startingrow, len(zero_column_selected_indexes)
 
-    def on_duplicate(self):
-        if len(self.form.contentTable.selectionModel().selectedIndexes()) == 0:
-            QMessageBox.critical(self, "Error", "You must select the first column of the row you want to duplicate")
-            return
+    def get_selected_cells(self):
+        selected = []
+        for selected_index in self.form.contentTable.selectedIndexes():
+            selected.append((selected_index.column(), selected_index.row()))
+        return selected
 
-        start, amount = self.get_selection()
-        self.undoStack.beginMacro("Duplicate Row")
-        self.undoStack.push(DuplicateRowCommand(self.model.contentTableModel, start))
-        self.undoStack.endMacro()
-        self.set_undo_redo_text()
-        self.form.contentTable.reset()
+    def get_selected_cell(self):
+        selected = self.get_selected_cells()
+        if len(selected) == 1:
+            return selected[0]
+        return None
 
-    def on_cut(self):
-        self.on_copy()
-        index = self.form.contentTable.selectionModel().selectedIndexes()[0]
-        command = EditCommand(self.model.contentTableModel, index)
-        command.newValue("")
-        self.undoStack.beginMacro("Cut")
-        self.undoStack.push(command)
-        self.undoStack.endMacro()
-        self.set_undo_redo_text()
-        self.form.contentTable.reset()
+    def get_selected_rows(self):
+        rows = []
+        for index in self.get_selected_cells():
+            rows.append(index[1])
+        return rows
 
-    def on_remove(self):
-        if len(self.model.contentTableModel.list) == 0:
-            QMessageBox.critical(self, "Error", "Removing rows from an empty table is not possible.")
-            return
-        start, amount = self.get_selection()
-        if start != len(self.model.contentTableModel.list):
-            self.undoStack.beginMacro("Remove Row(s)")
-            self.undoStack.push(RemoveRowsCommand(self.model.contentTableModel, start, amount))
-            self.undoStack.endMacro()
-            self.set_undo_redo_text()
-        else:
-            QMessageBox.critical(self, "Error", "You need to choose the rows you want to remove by selecting the cells in the first column")
-
-    def show_append_override_dialog(self):
-        msgBox = QMessageBox()
-        msgBox.setWindowTitle("Append or Override")
-        msgBox.setText("Append or override the current entries?")
-        msgBox.addButton("Append", QMessageBox.YesRole)
-        msgBox.addButton("Override", QMessageBox.NoRole)
-        return msgBox.exec_()
+    def get_selected_row(self):
+        rows = self.get_selected_rows()
+        if len(rows) == 1:
+            return rows[0]

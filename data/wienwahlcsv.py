@@ -5,10 +5,7 @@ from collections import Iterable
 
 class WienWahlReader(Iterable):
     def __iter__(self):
-        dialect = csv.Sniffer().sniff(self.file.read(1024))
-        self.file.seek(0)
-        reader = csv.DictReader(self.file, dialect=dialect)
-        for row in reader:
+        for row in self.reader:
             newrow = {}
             for key, value in row.items():
                 if key.strip() is not "":
@@ -22,25 +19,28 @@ class WienWahlReader(Iterable):
             list.append(item)
         return list
 
+    def headers(self):
+        return self.reader.fieldnames
+
     def __init__(self, file):
         if file is None or not hasattr(file, 'read'):
             raise Exception("invalid file")
         self.file = file
 
+        self.dialect = csv.Sniffer().sniff(self.file.read(4096))
+        self.file.seek(0)
+        self.reader = csv.DictReader(self.file, dialect=self.dialect)
+
 
 class WienWahlWriter():
-    def __init__(self, file):
+    def __init__(self, file, header):
         if file is None or not hasattr(file, 'write'):
             raise Exception("invalid file")
         self.file = file
-        self.dictwriter = None
+        self.dictwriter = csv.DictWriter(self.file, delimiter=";", fieldnames=header)
+        self.dictwriter.writeheader()
 
     def write(self, row):
-        if not self.dictwriter:
-            fieldnames = list(row.keys())
-            self.dictwriter = csv.DictWriter(self.file, delimiter=";", fieldnames=fieldnames)
-            self.dictwriter.writerow(dict((fn, fn) for fn in fieldnames))
-
         self.dictwriter.writerow(row)
 
     def writeAll(self, rows):

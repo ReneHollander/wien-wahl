@@ -1,12 +1,11 @@
 from datetime import datetime
-import time
-from data.dbconfig import DBConfig
-from data.wienwahlcsv import WienWahlReader
 from sqlalchemy import create_engine
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session
 from sqlalchemy.util import OrderedSet
 from util import first
+
+default_header = ["T", "WV", "WK", "BZ", "SPR", "WBER", "ABG", "UNG"]
 
 
 class WienWahlDatabase:
@@ -48,7 +47,7 @@ class WienWahlDatabase:
 
         parties = {}
         for key in data[0].keys():
-            if key not in ["SPR", "BZ", "WBER", "ABG", "UNG", "T", "WV", "WK"]:
+            if key not in default_header:
                 parties[key] = self.session.query(self.Party.nr).filter(self.Party.abbr == key).first()[0]
 
         districts = []
@@ -76,8 +75,7 @@ class WienWahlDatabase:
         self.session.commit()
 
     def load(self):
-
-        header = OrderedSet(["WK", "BZ", "SPR", "WBER", "ABG", "UNG"])
+        header = OrderedSet(default_header)
         parties = {}
         for party in self.session.query(self.Party).all():
             parties[party.nr] = party.abbr
@@ -110,7 +108,7 @@ class WienWahlDatabase:
                 }
             data[key][parties[row["pnr"]]] = row["cnt"]
 
-        return list(data.values())
+        return header, list(data.values())
 
     def create_projection(self):
 
@@ -125,7 +123,7 @@ class WienWahlDatabase:
 
         result = self.session.query(self.Party.abbr, self.ProjectionResult.percentage) \
             .select_from(self.Party).join(self.ProjectionResult, self.Party.nr == self.ProjectionResult.pnr) \
-            .filter(self.ProjectionResult.enr == self.enr, self.ProjectionResult.ts == ts)\
+            .filter(self.ProjectionResult.enr == self.enr, self.ProjectionResult.ts == ts) \
             .all()
         data = {}
         for row in result:

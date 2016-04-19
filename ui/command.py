@@ -4,66 +4,61 @@ from PySide.QtGui import QUndoCommand
 class EditCommand(QUndoCommand):
     def __init__(self, model, index):
         QUndoCommand.__init__(self)
-        self.__newValue = None
-        self.__model = model
-        self.__index = index
-        self.__oldValue = None
+        self.newValue = None
+        self.model = model
+        self.index = index
+        self.oldValue = None
 
     def redo(self):
-        self.__oldValue = self.__model.data(self.__index)
-        self.__model.setData(self.__index, self.__newValue)
+        self.oldValue = self.model.data(self.index)
+        self.model.setData(self.index, self.newValue)
 
     def undo(self):
-        self.__newValue = self.__model.data(self.__index)
-        self.__model.setData(self.__index, self.__oldValue)
+        self.newValue = self.__model.data(self.index)
+        self.model.setData(self.index, self.oldValue)
 
     def setText(self, *args, **kwargs):
         super().setText(*args, **kwargs)
 
-    def newValue(self, newValue):
-        self.__newValue = newValue
 
-
-class InsertRowsCommand(QUndoCommand):
-    def __init__(self, model, index, amount):
+class InsertRowCommand(QUndoCommand):
+    def __init__(self, model, row):
         QUndoCommand.__init__(self)
-        self.__model = model
-        self.__index = index
-        self.__amount = amount
+        self.model = model
+        self.row = row
 
     def redo(self):
-        self.__model.insertRows(self.__index, self.__amount)
+        self.model.insertRow(self.row)
 
     def undo(self):
-        self.__model.removeRows(self.__index, self.__amount)
+        self.model.removeRow(self.row)
 
 
-class RemoveRowsCommand(QUndoCommand):
-    def __init__(self, model, index, amount):
+class RemoveRowCommand(QUndoCommand):
+    def __init__(self, model, row):
         QUndoCommand.__init__(self)
-        self.__model = model
-        self.__index = index
-        self.__amount = amount
-        self.__oldList = None
-        self.__oldHeader = None
+        self.model = model
+        self.row = row
+        self.oldList = None
+        self.oldHeader = None
 
     def redo(self):
-        self.__oldHeader = list(self.__model.header)
-        self.__oldList = list(self.__model.list)
-        self.__model.removeRows(self.__index, self.__amount)
+        self.oldHeader = list(self.model.header)
+        self.oldList = list(self.model.list)
+        self.model.removeRow(self.row)
 
     def undo(self):
-        self.__model.set_list(self.__oldList, self.__oldHeader)
+        self.model.set_list(self.oldList, self.oldHeader)
 
 
 class DuplicateRowCommand(QUndoCommand):
     def __init__(self, model, index):
         QUndoCommand.__init__(self)
-        self.__model = model
-        self.__index = index
+        self.model = model
+        self.index = index
 
     def redo(self):
-        self.__model.duplicateRow(self.__index)
+        self.model.duplicateRow(self.index[1])
 
     def undo(self):
-        self.__model.removeRows(self.__index, 1)
+        self.model.removeRow(self.index[1])
