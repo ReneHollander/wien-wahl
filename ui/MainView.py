@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'res/ui/Main.ui'
 #
-# Created: Wed Apr 13 21:55:29 2016
+# Created: Tue Apr 19 11:16:33 2016
 #      by: pyside-uic 0.2.15 running on PySide 1.2.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -36,9 +36,6 @@ class Ui_Main(object):
         self.statusbar = QtGui.QStatusBar(Main)
         self.statusbar.setObjectName("statusbar")
         Main.setStatusBar(self.statusbar)
-        self.toolBar = QtGui.QToolBar(Main)
-        self.toolBar.setObjectName("toolBar")
-        Main.addToolBar(QtCore.Qt.TopToolBarArea, self.toolBar)
         self.actionOpen = QtGui.QAction(Main)
         self.actionOpen.setObjectName("actionOpen")
         self.actionSave = QtGui.QAction(Main)
@@ -122,7 +119,6 @@ class Ui_Main(object):
         self.menuDatabase.setToolTip(QtGui.QApplication.translate("Main", "Database", None, QtGui.QApplication.UnicodeUTF8))
         self.menuDatabase.setStatusTip(QtGui.QApplication.translate("Main", "Database", None, QtGui.QApplication.UnicodeUTF8))
         self.menuDatabase.setTitle(QtGui.QApplication.translate("Main", "Database", None, QtGui.QApplication.UnicodeUTF8))
-        self.toolBar.setWindowTitle(QtGui.QApplication.translate("Main", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
         self.actionOpen.setText(QtGui.QApplication.translate("Main", "Open", None, QtGui.QApplication.UnicodeUTF8))
         self.actionOpen.setStatusTip(QtGui.QApplication.translate("Main", "Open", None, QtGui.QApplication.UnicodeUTF8))
         self.actionOpen.setShortcut(QtGui.QApplication.translate("Main", "Ctrl+O", None, QtGui.QApplication.UnicodeUTF8))

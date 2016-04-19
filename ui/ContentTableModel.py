@@ -63,20 +63,20 @@ class ContentTableModel(QAbstractTableModel):
             writer.writeAll(self.list)
 
     def duplicateRow(self, row_index, parent=QModelIndex()):
-        self.beginInsertRows(parent, row_index, row_index + 1)
+        self.beginInsertRows(parent, row_index, row_index)
         row = self.list[row_index].copy()
         self.list.insert(row_index + 1, {key: "" for key in self.header})
         self.list[row_index + 1] = row
         self.endInsertRows()
 
     def insertRow(self, row, parent=QModelIndex()):
-        self.beginInsertRows(parent, row, row + 1)
+        self.beginInsertRows(parent, row, row)
         self.list.insert(row, {key: "" for key in self.header})
         self.endInsertRows()
         return True
 
     def removeRow(self, row, parent=QModelIndex()):
-        self.beginRemoveRows(parent, row, row + 1)
+        self.beginRemoveRows(parent, row, row)
         del self.list[row]
         self.endRemoveRows()
         return True
