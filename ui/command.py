@@ -14,7 +14,7 @@ class EditCommand(QUndoCommand):
         self.model.setData(self.index, self.newValue)
 
     def undo(self):
-        self.newValue = self.__model.data(self.index)
+        self.newValue = self.model.data(self.index)
         self.model.setData(self.index, self.oldValue)
 
     def setText(self, *args, **kwargs):
