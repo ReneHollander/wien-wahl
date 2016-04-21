@@ -26,7 +26,6 @@ class MainController(QMainWindow):
 
         self.form = MainView.Ui_Main()
         self.form.setupUi(self)
-
         self.form.actionOpen.triggered.connect(self.on_open)
         self.form.actionSave.triggered.connect(self.on_save)
         self.form.actionSave_As.triggered.connect(self.on_saveas)
@@ -242,25 +241,6 @@ class MainController(QMainWindow):
         msgBox.addButton("Append", QMessageBox.YesRole)
         msgBox.addButton("Override", QMessageBox.NoRole)
         return msgBox.exec_()
-
-    def get_zero_column_selected_indexes(self):
-        selected_indexes = self.form.contentTable.selectedIndexes()
-        if not selected_indexes:
-            return
-        return [index for index in selected_indexes if not index.column()]
-
-    def get_selection(self):
-        zero_column_selected_indexes = self.get_zero_column_selected_indexes()
-        if not zero_column_selected_indexes:
-            return self.model.contentTableModel.rowCount(self), 1
-        first_zero_column_selected_index = zero_column_selected_indexes[0]
-        zero_column_selected_indexes = self.get_zero_column_selected_indexes()
-
-        if not first_zero_column_selected_index or not first_zero_column_selected_index.isValid():
-            return False
-        startingrow = first_zero_column_selected_index.row()
-
-        return startingrow, len(zero_column_selected_indexes)
 
     def get_selected_cells(self):
         selected = []
